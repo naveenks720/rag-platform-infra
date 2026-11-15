@@ -77,7 +77,7 @@ resource "aws_iam_role_policy" "kb" {
   policy = data.aws_iam_policy_document.kb_permissions.json
 }
 
-# ---------------------------------------------------------- knowledge base
+# ---------------------------------------------------------- knowledge base -------------
 resource "aws_bedrockagent_knowledge_base" "this" {
   name     = "${local.name}-kb"
   role_arn = aws_iam_role.kb.arn
