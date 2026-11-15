@@ -47,6 +47,18 @@ variable "github_org" {
   type        = string
 }
 
+variable "github_owner_id" {
+  description = "Numeric ID of the GitHub user/org (appears in the OIDC subject)"
+  type        = string
+  default     = ""
+}
+
+variable "app_repo_id" {
+  description = "Numeric ID of the app repository (appears in the OIDC subject)"
+  type        = string
+  default     = ""
+}
+
 variable "app_repo" {
   description = "Name of the RAG application repository"
   type        = string

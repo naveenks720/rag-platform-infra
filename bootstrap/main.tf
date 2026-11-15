@@ -60,6 +60,19 @@ resource "aws_iam_openid_connect_provider" "github" {
   client_id_list = ["sts.amazonaws.com"]
 }
 
+# GitHub puts immutable numeric IDs in the OIDC subject, for example
+#   repo:naveenks720@25269118/rag-platform-infra@1457102834:pull_request
+# When both IDs are provided the trust policies match that form (it cannot be reused by a
+# renamed or re-created repo). Without IDs they fall back to the older name-only form:
+#   repo:naveenks720/rag-platform-infra:pull_request
+locals {
+  infra_sub_prefix = (
+    var.github_owner_id != "" && var.infra_repo_id != ""
+    ? "repo:${var.github_org}@${var.github_owner_id}/${var.infra_repo}@${var.infra_repo_id}"
+    : "repo:${var.github_org}/${var.infra_repo}"
+  )
+}
+
 data "aws_iam_policy_document" "trust_plan" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -75,7 +88,7 @@ data "aws_iam_policy_document" "trust_plan" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_host}:sub"
-      values   = ["repo:${var.github_org}/${var.infra_repo}:pull_request"]
+      values   = ["${local.infra_sub_prefix}:pull_request"]
     }
   }
 }
@@ -96,7 +109,7 @@ data "aws_iam_policy_document" "trust_apply" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_host}:sub"
-      values   = ["repo:${var.github_org}/${var.infra_repo}:environment:production"]
+      values   = ["${local.infra_sub_prefix}:environment:production"]
     }
   }
 }
