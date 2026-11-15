@@ -11,4 +11,4 @@ app_repo = "rag-app"
 #   curl -s https://api.github.com/repos/naveenks720/rag-app | grep -m1 '"id"'
 # The first "id" printed is the repository id.
 github_owner_id = "25269118"
-app_repo_id     = ""
+app_repo_id     = "1457103571"
