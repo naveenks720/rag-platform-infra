@@ -5,6 +5,18 @@ data "aws_iam_openid_connect_provider" "github" {
   url = "https://${local.oidc_host}"
 }
 
+# GitHub puts immutable numeric IDs in the OIDC subject, for example
+#   repo:naveenks720@25269118/rag-app@<repo id>:pull_request
+# With both IDs set the trust policies match that form; without them they fall back to the
+# older name-only form (repo:naveenks720/rag-app:pull_request).
+locals {
+  app_sub_prefix = (
+    var.github_owner_id != "" && var.app_repo_id != ""
+    ? "repo:${var.github_org}@${var.github_owner_id}/${var.app_repo}@${var.app_repo_id}"
+    : "repo:${var.github_org}/${var.app_repo}"
+  )
+}
+
 data "aws_iam_policy_document" "app_trust_plan" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -20,7 +32,7 @@ data "aws_iam_policy_document" "app_trust_plan" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_host}:sub"
-      values   = ["repo:${var.github_org}/${var.app_repo}:pull_request"]
+      values   = ["${local.app_sub_prefix}:pull_request"]
     }
   }
 }
@@ -40,7 +52,7 @@ data "aws_iam_policy_document" "app_trust_deploy" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_host}:sub"
-      values   = ["repo:${var.github_org}/${var.app_repo}:environment:production"]
+      values   = ["${local.app_sub_prefix}:environment:production"]
     }
   }
 }

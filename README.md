@@ -25,8 +25,12 @@ Authentication is GitHub OIDC, so there are no long-lived AWS keys in GitHub. Th
 ```bash
 cd bootstrap
 terraform init
-terraform apply -var github_org=<your-github-user-or-org>
+terraform apply        # values come from bootstrap/terraform.tfvars
 ```
+GitHub's OIDC subject contains numeric IDs (`repo:<owner>@<owner id>/<repo>@<repo id>:pull_request`), so
+the trust policies are built from `github_owner_id` and `infra_repo_id` in `terraform.tfvars`.
+If you fork this setup, find your own IDs with `curl -s https://api.github.com/repos/<owner>/<repo>`
+(the repository `id`, and `owner.id`), and see the real subject in CloudTrail if a role refuses to assume.
 Note the outputs: `tf_state_bucket`, `aws_plan_role_arn`, `aws_apply_role_arn`.
 
 **2. Create the GitHub repo and set variables**
